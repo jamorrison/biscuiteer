@@ -11,6 +11,8 @@
 #' @param sampleNames if NULL create; if vector assign; if data.frame make pData
 #' @param clumpSize   for files > `yieldSize` lines long, clump the file (5e7)
 #' @param hdf5        boolean; use HDF5 arrays for backing of the data? (FALSE)
+#' @param hdf5dir     if hdf5 is TRUE, where should HDF5 files be stored? (NULL)
+#' @param replace     replace hdf5dir if is already exists (FALSE)
 #' @param sparse      boolean; use sparse Matrix objects for the data? (TRUE)
 #' @param how         how to load the data? "data.table" (default) or "readr"
 #' @param chr         load a specific chromosome (to rbind() later)? (NULL)
@@ -30,6 +32,8 @@ checkBiscuitBED <- function(BEDfile,
                             sampleNames=NULL, 
                             clumpSize=5e7, 
                             hdf5=FALSE,
+                            hdf5dir=NULL,
+                            replace=FALSE,
                             sparse=TRUE,
                             how=c("data.table","readr"),
                             chr=NULL) {
@@ -56,6 +60,26 @@ checkBiscuitBED <- function(BEDfile,
   params$how <- match.arg(how)
   params$sparse <- sparse
   params$hdf5 <- hdf5
+  
+  # Check HDF5 parameters if hdf5=TRUE
+  if (hdf5) {
+    if (is.null(hdf5dir)) {
+      stop("You must provide an `hdf5dir` if `hdf5=TRUE`")
+    }
+    if (!isSingleString(hdf5dir)) {
+      stop(paste0("`hdf5dir` must be a single string that specifies the path to ",
+                  "the directory where the HDF5-backed object will be saved. The ",
+                  "directory will be created if it does not exist."))
+    }
+    if (!isTRUEorFALSE(replace)) {
+      stop("`replace` must be TRUE or FALSE.")
+    }
+    if (!dir.exists(hdf5dir)) {
+      HDF5Array:::.create_dir(hdf5dir)
+    } else {
+      HDF5Array:::.replace_dir(hdf5dir, replace)
+    }
+  }
 
   # a tabixed BED-like file that is the only mandatory argument to read.biscuit
   params$BEDfile <- BEDfile

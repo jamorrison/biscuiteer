@@ -14,6 +14,9 @@
 #' @param how         how to load the data? "data.table" (default) or "readr"
 #' @param hdf5        make the object HDF5-backed? (FALSE; use in-core storage) 
 #' @param hdf5dir     if hdf5 is TRUE, where should HDF5 files be stored? (NULL)
+#' @param replace     replace hdf5dir if is already exists (FALSE)
+#' @param chunkdim    chunk dimensions for writing HDF5 file to disk (NULL)
+#' @param level       compression level for writing HDF5 to disk (NULL)
 #' @param sparse      are there a lot of zero-coverage sites? (default is FALSE)
 #' @param clumpSize   number of rows before readr reading becomes clumped (1e6)
 #' @param chr         load a specific chromosome (to rbind() later)? (NULL)
@@ -41,6 +44,9 @@ read.biscuit <- function(BEDfile,
                          how=c("data.table","readr"),
                          hdf5=FALSE, 
                          hdf5dir=NULL,
+                         replace=FALSE,
+                         chunkdim=NULL,
+                         level=NULL,
                          sparse=FALSE,
                          clumpSize=1e6, 
                          chr=NULL,
@@ -65,6 +71,7 @@ read.biscuit <- function(BEDfile,
   how <- match.arg(how)
   params <- checkBiscuitBED(BEDfile=BEDfile, VCFfile=VCFfile, how=how, chr=chr,
                             sampleNames=sampleNames, clumpSize=clumpSize, hdf5=hdf5,
+                            hdf5dir=hdf5dir, replace=replace,
                             sparse=sparse, merged=merged)
   message("Reading ", ifelse(params$merged, "merged", "unmerged"), 
           " input from ", params$tbx$path, "...")
@@ -123,15 +130,7 @@ read.biscuit <- function(BEDfile,
   genome(rowRanges(res)) <- genome
 
   if (hdf5) {
-    if (is.null(hdf5dir)) {
-      stop("You must provide an `hdf5dir` argument if you set `hdf5` to TRUE.")
-    } else {
-      if (dir.exists(hdfdir)) {
-        stop("The directory you specified already exists!")
-      } else { 
-        res <- HDF5Array::saveHDF5SummarizedExperiment(res, dir=hdf5dir)
-      }
-    }
+    res <- HDF5Array::saveHDF5SummarizedExperiment(res, dir=hdf5dir)
   } 
   return(res)
 

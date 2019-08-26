@@ -5,8 +5,8 @@
 \title{inspect Biscuit BED and/or VCF output to make sure all is as it should be}
 \usage{
 checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
-  clumpSize = 5e+07, hdf5 = FALSE, sparse = TRUE,
-  how = c("data.table", "readr"), chr = NULL)
+  clumpSize = 5e+07, hdf5 = FALSE, hdf5dir = NULL, replace = FALSE,
+  sparse = TRUE, how = c("data.table", "readr"), chr = NULL)
 }
 \arguments{
 \item{BEDfile}{a BED-like file (compressed and tabixed, maybe w/header)}
@@ -20,6 +20,10 @@ checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
 \item{clumpSize}{for files > \code{yieldSize} lines long, clump the file (5e7)}
 
 \item{hdf5}{boolean; use HDF5 arrays for backing of the data? (FALSE)}
+
+\item{hdf5dir}{if hdf5 is TRUE, where should HDF5 files be stored? (NULL)}
+
+\item{replace}{replace hdf5dir if is already exists (FALSE)}
 
 \item{sparse}{boolean; use sparse Matrix objects for the data? (TRUE)}
 
