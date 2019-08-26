@@ -5,7 +5,7 @@
 #' Note: the defaults assume alignment against hg19 (use genome=xyz to override)
 #' Note 2: if a BED has no header, a VCF header can be used to autodetect names.
 #'
-#' @param BEDfile    the file (compressed or not, doesn't matter) to load
+#' @param BEDfile     the file (compressed or not, doesn't matter) to load
 #' @param VCFfile     the file (compressed and tabixed, with header) to load
 #' @param merged      are CpG sites merged?
 #' @param sampleNames if NULL, create; if VCF, read; if data.frame, make pData
@@ -15,7 +15,7 @@
 #' @param hdf5        make the object HDF5-backed? (FALSE; use in-core storage) 
 #' @param hdf5dir     if hdf5 is TRUE, where should HDF5 files be stored? (NULL)
 #' @param sparse      are there a lot of zero-coverage sites? (default is FALSE)
-#' @param chunkSize   number of rows before readr reading becomes chunked (1e6)
+#' @param clumpSize   number of rows before readr reading becomes clumped (1e6)
 #' @param chr         load a specific chromosome (to rbind() later)? (NULL)
 #' @param which       a GRanges of regions to load (default NULL, load them all)
 #' @param verbose     be verbose? (FALSE) 
@@ -42,7 +42,7 @@ read.biscuit <- function(BEDfile,
                          hdf5=FALSE, 
                          hdf5dir=NULL,
                          sparse=FALSE,
-                         chunkSize=1e6, 
+                         clumpSize=1e6, 
                          chr=NULL,
                          which=NULL,
                          verbose=FALSE) { 
@@ -64,7 +64,7 @@ read.biscuit <- function(BEDfile,
 
   how <- match.arg(how)
   params <- checkBiscuitBED(BEDfile=BEDfile, VCFfile=VCFfile, how=how, chr=chr,
-                            sampleNames=sampleNames, chunk=chunkSize, hdf5=hdf5,
+                            sampleNames=sampleNames, clumpSize=clumpSize, hdf5=hdf5,
                             sparse=sparse, merged=merged)
   message("Reading ", ifelse(params$merged, "merged", "unmerged"), 
           " input from ", params$tbx$path, "...")
@@ -91,15 +91,15 @@ read.biscuit <- function(BEDfile,
         message("Reading line ", pos, "...")
         return(x)
       }
-      message("Making ",params$passes," passes of ",chunkSize," loci each...")
+      message("Making ",params$passes," passes of ",clumpSize," loci each...")
       tbl <- with(params,
                   read_tsv_chunked(tbx$path, DataFrameCallback$new(f), na=".",
                                    skip=as.numeric(params$hasHeader), 
                                    col_names=colNames, col_types=colSpec, 
-                                   chunk_size=chunkSize))
+                                   chunk_size=clumpSize))
     } else { 
-      message("If the following is slow, you may need to decrease chunkSize")
-      message("from ",chunkSize," to something smaller & do multiple passes.")
+      message("If the following is slow, you may need to decrease clumpSize")
+      message("from ",clumpSize," to something smaller & do multiple passes.")
       tbl <- with(params,
                   read_tsv(tbx$path, na=".", comment="#",
                            skip=as.numeric(params$hasHeader), 

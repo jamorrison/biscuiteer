@@ -9,7 +9,7 @@
 #' @param VCFfile     a VCF file (compressed and tabixed; only needs the header)
 #' @param merged      boolean; is this merged CpG data?
 #' @param sampleNames if NULL create; if vector assign; if data.frame make pData
-#' @param chunkSize   for files > `yieldSize` lines long, chunk the file (5e7)
+#' @param clumpSize   for files > `yieldSize` lines long, clump the file (5e7)
 #' @param hdf5        boolean; use HDF5 arrays for backing of the data? (FALSE)
 #' @param sparse      boolean; use sparse Matrix objects for the data? (TRUE)
 #' @param how         how to load the data? "data.table" (default) or "readr"
@@ -28,7 +28,7 @@ checkBiscuitBED <- function(BEDfile,
                             VCFfile, 
                             merged,
                             sampleNames=NULL, 
-                            chunkSize=5e7, 
+                            clumpSize=5e7, 
                             hdf5=FALSE,
                             sparse=TRUE,
                             how=c("data.table","readr"),
@@ -61,7 +61,7 @@ checkBiscuitBED <- function(BEDfile,
   params$BEDfile <- BEDfile
   if (!base::grepl(".gz$", BEDfile)) stop("Only tabix'ed BEDs are supported.")
   message("Checking ", BEDfile, " for import...")
-  tbx <- TabixFile(BEDfile, yieldSize=chunkSize)
+  tbx <- TabixFile(BEDfile, yieldSize=clumpSize)
   params$tbx <- tbx 
 
   # if we have a VCF file or VCF header, use that to get sample ordering:
@@ -172,12 +172,12 @@ checkBiscuitBED <- function(BEDfile,
   
   if (params$how == "readr") { 
     # {{{
-    params$chunkSize <- chunkSize
-    params$passes <- ceiling(params$nLines / params$chunkSize)
+    params$clumpSize <- clumpSize
+    params$passes <- ceiling(params$nLines / params$clumpSize)
     if(params$passes > 1) {
       message(params$BEDfile, " will require ", 
               params$passes, " passes of ", 
-              params$chunkSize, " to read.")
+              params$clumpSize, " to read.")
     }
     # }}}
   }

@@ -5,7 +5,7 @@
 \title{inspect Biscuit BED and/or VCF output to make sure all is as it should be}
 \usage{
 checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
-  chunkSize = 5e+07, hdf5 = FALSE, sparse = TRUE,
+  clumpSize = 5e+07, hdf5 = FALSE, sparse = TRUE,
   how = c("data.table", "readr"), chr = NULL)
 }
 \arguments{
@@ -17,7 +17,7 @@ checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
 
 \item{sampleNames}{if NULL create; if vector assign; if data.frame make pData}
 
-\item{chunkSize}{for files > \code{yieldSize} lines long, chunk the file (5e7)}
+\item{clumpSize}{for files > \code{yieldSize} lines long, clump the file (5e7)}
 
 \item{hdf5}{boolean; use HDF5 arrays for backing of the data? (FALSE)}
 
