@@ -124,14 +124,54 @@ read.biscuit <- function(BEDfile,
     tbl <- tbl[rowSums(is.na(tbl)) == 0, ]
   }
 
+  # Make HDF5-backed BSseq object
   message("Loaded ", params$tbx$path, ". Creating bsseq object...")
-  res <- makeBSseq(tbl, params, simplify=simplify, verbose=verbose)
+  if (hdf5) {
+    # Set up RegularArrayGrid for reading in data
+    # Variable Description:
+    #   - rag_nrow: number of rows in data
+    #   - rag_ncol: number of samples in the data
+    #   - rag_dim : matrix dimensions for the data (nrow x ncol)
+    #   - grid    : refdim - matrix dimensions
+    #               spacings - how to read fill/read the data (currently reads single-column-wise)
+    # TODO: Investigate best number of columns to load (change 1L to nSamples????)
+    # TODO: Investigate other grid shapes (ArbitraryArrayGrid, BlockGrid)
+    rag_nrow <- as.integer(nrow(tbl))
+    rag_ncol <- as.integer(params$nSamples)
+    rag_dim <- c(rag_nrow, rag_ncol)
+    grid <- RegularArrayGrid(refdim = rag_dim, spacings = c(rag_nrow, 1L))
+
+    # Initialize HDF5RealizationSink
+    hdf5_path <- file.path(hdf5dir, "assays.h5")
+    M_sink <- HDF5RealizationSink(dim = rag_dim,
+                                  dimnames = NULL,
+                                  type = "integer",
+                                  filepath = hdf5_path,
+                                  name = "M",
+                                  chunkdim = chunkdim,
+                                  level = level)
+    on.exit(close(M_sink), add = TRUE)
+    Cov_sink <- HDF5RealizationSink(dim = rag_dim,
+                                    dimnames = NULL,
+                                    type = "integer",
+                                    filepath = hdf5_path,
+                                    name = "Cov",
+                                    chunkdim = chunkdim,
+                                    level = level)
+    on.exit(close(Cov_sink), add = TRUE)
+    sink_lock <- ipcid()
+    on.exit(ipcremove(sink_lock), add = TRUE)
+    res <- makeBSseq_hdf5(tbl, params, grid = grid,
+                          M_sink = M_sink, Cov_sink = Cov_sink,
+                          sink_lock = sink_lock, simplify = simplify,
+                          verbose = verbose)
+  } else {
+    # Write into memory rather than to disk
+    res <- makeBSseq(tbl, params, simplify=simplify, verbose=verbose)
+  }
   metadata(res)$vcfHeader <- params$vcfHeader
   genome(rowRanges(res)) <- genome
 
-  if (hdf5) {
-    res <- HDF5Array::saveHDF5SummarizedExperiment(res, dir=hdf5dir)
-  } 
   return(res)
 
 }

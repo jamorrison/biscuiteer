@@ -80,6 +80,7 @@ checkBiscuitBED <- function(BEDfile,
       HDF5Array:::.replace_dir(hdf5dir, replace)
     }
   }
+  params$hdf5dir <- hdf5dir
 
   # a tabixed BED-like file that is the only mandatory argument to read.biscuit
   params$BEDfile <- BEDfile
