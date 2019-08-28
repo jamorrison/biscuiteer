@@ -2,17 +2,19 @@
 % Please edit documentation in R/loadHDF5.R
 \name{loadHDF5}
 \alias{loadHDF5}
-\title{a simple local wrapper around HDF5Array::loadHDF5SummarizedExperiment}
+\title{Function to load HDF5-backed SummarizedExperiment from read.biscuit}
 \usage{
-loadHDF5(dir = "HDF5")
+loadHDF5(dir, prefix = "")
 }
 \arguments{
-\item{dir}{path to the file assays.h5 (and se.rds); default is "HDF5"}
+\item{dir}{path to the HDF5-backed file}
+
+\item{prefix}{optional prefix to add to filenames inside ‘dir’; default is ""}
 }
 \value{
 \preformatted{   a SummarizedExperiment-derived object (such as a BSseq object)
 }
 }
 \description{
-a simple local wrapper around HDF5Array::loadHDF5SummarizedExperiment
+Local wrapper for HDF5Array::loadHDF5SummarizedExperiment
 }
