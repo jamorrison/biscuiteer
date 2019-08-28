@@ -27,7 +27,6 @@ makeBSseq_hdf5 <- function(tbl,
                            simplify = FALSE,
                            verbose = FALSE) {
 
-
     # helper function for coercing vector to matrix
     # x      : vector to coerce
     # verbose: be verbose about what is happening
@@ -54,6 +53,7 @@ makeBSseq_hdf5 <- function(tbl,
         colnames(x) <- base::sub("beta", match.arg(what), colnames(x))
         return(x)
     }
+
     gr <- resize(makeGRangesFromDataFrame(tbl[, 1:3]), 1)
 
     # Create M_tmp and Cov_tmp matrices from tbl
@@ -106,6 +106,6 @@ makeBSseq_hdf5 <- function(tbl,
 
     x <- bsseq
     x@assays <- HDF5Array:::.shorten_assay2h5_links(x@assays)
-    saveRDS(x, file = file.path(params$hdf5dir, "sum_expt.rds"))
+    saveRDS(x, file = params$rds_path)
     bsseq
 }

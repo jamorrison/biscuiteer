@@ -17,6 +17,7 @@
 #' @param replace     replace hdf5dir if is already exists (FALSE)
 #' @param chunkdim    chunk dimensions for writing HDF5 file to disk (NULL)
 #' @param level       compression level for writing HDF5 to disk (NULL)
+#' @param prefix      option prefix to add to filenames inside 'hdf5dir' (NULL)
 #' @param sparse      are there a lot of zero-coverage sites? (default is FALSE)
 #' @param clumpSize   number of rows before readr reading becomes clumped (1e6)
 #' @param chr         load a specific chromosome (to rbind() later)? (NULL)
@@ -47,6 +48,7 @@ read.biscuit <- function(BEDfile,
                          replace=FALSE,
                          chunkdim=NULL,
                          level=NULL,
+                         prefix=NULL,
                          sparse=FALSE,
                          clumpSize=1e6, 
                          chr=NULL,
@@ -71,7 +73,8 @@ read.biscuit <- function(BEDfile,
   how <- match.arg(how)
   params <- checkBiscuitBED(BEDfile=BEDfile, VCFfile=VCFfile, how=how, chr=chr,
                             sampleNames=sampleNames, clumpSize=clumpSize, hdf5=hdf5,
-                            hdf5dir=hdf5dir, replace=replace,
+                            hdf5dir=hdf5dir, replace=replace, prefix=prefix,
+                            chunkdim=chunkdim, level=level,
                             sparse=sparse, merged=merged)
   message("Reading ", ifelse(params$merged, "merged", "unmerged"), 
           " input from ", params$tbx$path, "...")
@@ -142,11 +145,10 @@ read.biscuit <- function(BEDfile,
     grid <- RegularArrayGrid(refdim = rag_dim, spacings = c(rag_nrow, 1L))
 
     # Initialize HDF5RealizationSink
-    hdf5_path <- file.path(hdf5dir, "assays.h5")
     M_sink <- HDF5RealizationSink(dim = rag_dim,
                                   dimnames = NULL,
                                   type = "integer",
-                                  filepath = hdf5_path,
+                                  filepath = params$h5_path,
                                   name = "M",
                                   chunkdim = chunkdim,
                                   level = level)
@@ -154,7 +156,7 @@ read.biscuit <- function(BEDfile,
     Cov_sink <- HDF5RealizationSink(dim = rag_dim,
                                     dimnames = NULL,
                                     type = "integer",
-                                    filepath = hdf5_path,
+                                    filepath = params$h5_path,
                                     name = "Cov",
                                     chunkdim = chunkdim,
                                     level = level)

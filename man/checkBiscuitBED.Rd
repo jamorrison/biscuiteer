@@ -6,7 +6,8 @@
 \usage{
 checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
   clumpSize = 5e+07, hdf5 = FALSE, hdf5dir = NULL, replace = FALSE,
-  sparse = TRUE, how = c("data.table", "readr"), chr = NULL)
+  chunkdim = NULL, level = NULL, prefix = NULL, sparse = TRUE,
+  how = c("data.table", "readr"), chr = NULL)
 }
 \arguments{
 \item{BEDfile}{a BED-like file (compressed and tabixed, maybe w/header)}
@@ -24,6 +25,12 @@ checkBiscuitBED(BEDfile, VCFfile, merged, sampleNames = NULL,
 \item{hdf5dir}{if hdf5 is TRUE, where should HDF5 files be stored? (NULL)}
 
 \item{replace}{replace hdf5dir if is already exists (FALSE)}
+
+\item{chunkdim}{chunk dimensions for writing HDF5 file to disk (NULL)}
+
+\item{level}{compression level for writing HDF5 to disk (NULL)}
+
+\item{prefix}{optional prefix to add to filenames inside 'hdf5dir' (NULL)}
 
 \item{sparse}{boolean; use sparse Matrix objects for the data? (TRUE)}
 

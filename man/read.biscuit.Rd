@@ -8,8 +8,8 @@
 read.biscuit(BEDfile, VCFfile, merged, sampleNames = NULL,
   simplify = FALSE, genome = "hg19", how = c("data.table", "readr"),
   hdf5 = FALSE, hdf5dir = NULL, replace = FALSE, chunkdim = NULL,
-  level = NULL, sparse = FALSE, clumpSize = 1e+06, chr = NULL,
-  which = NULL, verbose = FALSE)
+  level = NULL, prefix = NULL, sparse = FALSE, clumpSize = 1e+06,
+  chr = NULL, which = NULL, verbose = FALSE)
 }
 \arguments{
 \item{BEDfile}{the file (compressed or not, doesn't matter) to load}
@@ -35,6 +35,8 @@ read.biscuit(BEDfile, VCFfile, merged, sampleNames = NULL,
 \item{chunkdim}{chunk dimensions for writing HDF5 file to disk (NULL)}
 
 \item{level}{compression level for writing HDF5 to disk (NULL)}
+
+\item{prefix}{option prefix to add to filenames inside 'hdf5dir' (NULL)}
 
 \item{sparse}{are there a lot of zero-coverage sites? (default is FALSE)}
 

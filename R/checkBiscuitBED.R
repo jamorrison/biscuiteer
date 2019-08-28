@@ -13,6 +13,9 @@
 #' @param hdf5        boolean; use HDF5 arrays for backing of the data? (FALSE)
 #' @param hdf5dir     if hdf5 is TRUE, where should HDF5 files be stored? (NULL)
 #' @param replace     replace hdf5dir if is already exists (FALSE)
+#' @param chunkdim    chunk dimensions for writing HDF5 file to disk (NULL)
+#' @param level       compression level for writing HDF5 to disk (NULL)
+#' @param prefix      optional prefix to add to filenames inside 'hdf5dir' (NULL)
 #' @param sparse      boolean; use sparse Matrix objects for the data? (TRUE)
 #' @param how         how to load the data? "data.table" (default) or "readr"
 #' @param chr         load a specific chromosome (to rbind() later)? (NULL)
@@ -34,6 +37,9 @@ checkBiscuitBED <- function(BEDfile,
                             hdf5=FALSE,
                             hdf5dir=NULL,
                             replace=FALSE,
+                            chunkdim=NULL,
+                            level=NULL,
+                            prefix=NULL,
                             sparse=TRUE,
                             how=c("data.table","readr"),
                             chr=NULL) {
@@ -61,26 +67,43 @@ checkBiscuitBED <- function(BEDfile,
   params$sparse <- sparse
   params$hdf5 <- hdf5
   
-  # Check HDF5 parameters if hdf5=TRUE
+  # Check and set HDF5 parameters if hdf5=TRUE
   if (hdf5) {
     if (is.null(hdf5dir)) {
       stop("You must provide an `hdf5dir` if `hdf5=TRUE`")
     }
+
     if (!isSingleString(hdf5dir)) {
       stop(paste0("`hdf5dir` must be a single string that specifies the path to ",
                   "the directory where the HDF5-backed object will be saved. The ",
                   "directory will be created if it does not exist."))
     }
+
     if (!isTRUEorFALSE(replace)) {
       stop("`replace` must be TRUE or FALSE.")
     }
+
+    if (is.null(prefix)) {
+      prefix <- ""
+    } else {
+      prefix <- prefix
+    }
+
     if (!dir.exists(hdf5dir)) {
       HDF5Array:::.create_dir(hdf5dir)
-    } else {
+    } else if (prefix == "") {
       HDF5Array:::.replace_dir(hdf5dir, replace)
     }
+    rds_path <- file.path(hdf5dir, paste0(prefix, "se.rds"))
+    h5_path <- file.path(hdf5dir, paste0(prefix, "assays.h5"))
+    if (prefix != "") HDF5Array:::.check_and_delete_files(rds_path, h5_path, replace)
   }
   params$hdf5dir <- hdf5dir
+  params$prefix <- prefix
+  params$rds_path <- ifelse(hdf5, rds_path, NULL)
+  params$h5_path <- ifelse(hdf5, h5_path, NULL)
+  params$chunkdim <- chunkdim
+  params$level <- level
 
   # a tabixed BED-like file that is the only mandatory argument to read.biscuit
   params$BEDfile <- BEDfile
